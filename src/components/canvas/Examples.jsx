@@ -6,7 +6,7 @@ import * as THREE from 'three'
 import { useMemo, useRef, useState } from 'react'
 import { Line, useCursor, MeshDistortMaterial } from '@react-three/drei'
 import { useRouter } from 'next/navigation'
-
+import { useLayoutEffect } from 'react'
 export const Blob = ({ route = '/', ...props }) => {
   const router = useRouter()
   const [hovered, hover] = useState(false)
@@ -16,7 +16,8 @@ export const Blob = ({ route = '/', ...props }) => {
       onClick={() => router.push(route)}
       onPointerOver={() => hover(true)}
       onPointerOut={() => hover(false)}
-      {...props}>
+      {...props}
+    >
       <sphereGeometry args={[1, 64, 64]} />
       <MeshDistortMaterial roughness={0} color={hovered ? 'hotpink' : '#1fb2f5'} />
     </mesh>
@@ -64,5 +65,32 @@ export function Duck(props) {
 export function Dog(props) {
   const { scene } = useGLTF('/dog.glb')
 
+  return <primitive object={scene} {...props} />
+}
+
+export function Bon(props) {
+  const { scene } = useGLTF('/bon_props.glb')
+  const emmisiveObj = scene.traverse((o) => {
+    if (o.isMesh) {
+      if (o.material.emmisiveMap) {
+        o.material.emissiveIntensity = 0.5
+        console.dir(o)
+        return o
+      }
+    }
+  })
+  useLayoutEffect(
+    () =>
+      scene.traverse((o) => {
+        o.isMesh && (o.castShadow = o.receiveShadow = true)
+        // console.dir(o)
+      }),
+    [],
+  )
+  return <primitive object={scene} {...props} />
+}
+export function BonFloor(props) {
+  const { scene } = useGLTF('/bon_floor.glb')
+  useLayoutEffect(() => scene.traverse((o) => o.isMesh && (o.castShadow = o.receiveShadow = true)), [])
   return <primitive object={scene} {...props} />
 }
